@@ -18,20 +18,56 @@ Requiere Node.js 20.19+ o 22.12+ (exigido por Vite).
 ```bash
 npm install
 npm run dev       # servidor de desarrollo en http://localhost:5173
-npm run build     # build de producción en dist/
+npm run build     # build de producción (prerenderizado) en dist/
 npm run preview   # sirve el build localmente
 ```
+
+`npm run build` hace tres pasos: build del cliente, build SSR de `src/entry-server.jsx` y `scripts/prerender.js`, que inyecta el HTML ya renderizado en `dist/index.html`. En el navegador React hidrata ese HTML (`hydrateRoot`), así que buscadores y previsualizaciones de redes ven el contenido completo sin ejecutar JavaScript.
+
+## Despliegue en AWS Amplify
+
+El repo ya incluye la configuración:
+
+- **`amplify.yml`**: instala Node 22 (Vite 8 no funciona con Node 18), `npm ci`, `npm run build` y publica `dist/`.
+- **`customHttp.yml`**: cabeceras de seguridad (HSTS, nosniff, frame, referrer, permissions) y caché (assets con hash: 1 año; HTML: siempre revalidar; imágenes de `public/`: 1 día).
+
+Pasos:
+
+1. En la consola de Amplify: **Create new app → GitHub →** repo `Salva_IA_web`, rama `main`. Amplify detecta `amplify.yml`.
+2. **Environment variables**: añadir `SITE_URL` con la URL final, sin barra al final (p. ej. `https://salvaia.com`). Se usa en la URL canónica, las etiquetas Open Graph, `robots.txt`, `sitemap.xml`, `llms.txt` y los datos estructurados. Si no se define, se usa `https://salvaia.com`.
+3. **Domain management**: conectar el dominio propio (Amplify gestiona el certificado HTTPS). Redirigir `www` al dominio principal (o al revés) para tener una sola URL canónica.
+4. _(Opcional)_ **Rewrites and redirects**: `/<*>` → `/index.html` con código **404**, para que URLs inexistentes muestren la landing en lugar del error por defecto.
+5. Tras el primer despliegue: dar de alta el dominio en **Google Search Console** y enviar `https://<dominio>/sitemap.xml`.
+
+## SEO
+
+Se genera en el build (plugin `salva-seo` en `vite.config.js`):
+
+- HTML prerenderizado con un único `<h1>` y jerarquía de encabezados.
+- `<title>`, meta description, canonical, `robots`, `theme-color`.
+- Open Graph y Twitter Card con `public/og-image.png` (1200×630).
+- Favicon (`favicon.ico`), `icon-192/512.png`, `apple-touch-icon.png` y `site.webmanifest`.
+- JSON-LD (`Organization`, `WebSite`, `FAQPage`) construido desde `src/data/content.js`: al editar las FAQ se actualizan solos.
+- `robots.txt`, `sitemap.xml` y `llms.txt`.
+
+Lighthouse (móvil, build de producción): **SEO 100 · Accesibilidad 100 · Buenas prácticas 100**. LCP ≈ 0,7 s y CLS 0 con CPU ×4 y 4G.
 
 ## Estructura
 
 ```
 Salva_ia_web/
-├── index.html              # HTML base, metadatos y carga de fuentes
+├── index.html              # HTML base: metadatos SEO, Open Graph, iconos y fuentes
+├── amplify.yml             # build en AWS Amplify
+├── customHttp.yml          # cabeceras HTTP en Amplify
+├── scripts/prerender.js    # inyecta el HTML renderizado en dist/index.html
 ├── public/
 │   ├── logo-dark.png       # logo para fondos claros (loader y menú)
-│   └── logo-rose.png       # logo para fondos oscuros (footer)
+│   ├── logo-rose.png       # logo para fondos oscuros (footer)
+│   ├── og-image.png        # imagen para compartir en redes
+│   └── favicon.ico, icon-*.png, apple-touch-icon.png, site.webmanifest
 └── src/
-    ├── main.jsx            # punto de entrada
+    ├── main.jsx            # punto de entrada (hidrata el HTML prerenderizado)
+    ├── entry-server.jsx    # render a HTML para el prerender
     ├── App.jsx             # composición de secciones y toggles globales
     ├── index.css           # tema de Tailwind (colores, fuentes, animaciones) y utilidades propias
     ├── data/

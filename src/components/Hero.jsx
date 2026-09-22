@@ -9,6 +9,7 @@ function Word({ children, index, className = '' }) {
   const loaded = useLoaded()
   return (
     <span
+      data-word
       className={`${WORD_BASE} ${className}`}
       style={{
         transform: loaded ? 'translateY(0)' : 'translateY(120%)',

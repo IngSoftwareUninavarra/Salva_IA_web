@@ -72,11 +72,11 @@ export default function Contact() {
         >
           <label className="relative block">
             <FloatLabel active={isActive('name')}>Tu nombre</FloatLabel>
-            <input {...bind('name')} required autoComplete="name" className={`${FIELD} min-h-14 pt-[22px] pb-2`} />
+            <input {...bind('name')} name="name" id="contact-name" required autoComplete="name" className={`${FIELD} min-h-14 pt-[22px] pb-2`} />
           </label>
           <label className="relative block">
             <FloatLabel active={isActive('moment')}>Tu momento</FloatLabel>
-            <select {...bind('moment')} required className={`${FIELD} min-h-14 appearance-none pt-[22px] pb-2`}>
+            <select {...bind('moment')} name="moment" id="contact-moment" required className={`${FIELD} min-h-14 appearance-none pt-[22px] pb-2`}>
               <option value="" />
               {moments.map((m) => (
                 <option key={m.value} value={m.value}>
@@ -88,7 +88,7 @@ export default function Contact() {
           </label>
           <label className="relative block">
             <FloatLabel active={isActive('msg')}>Tu mensaje</FloatLabel>
-            <textarea {...bind('msg')} rows={4} className={`${FIELD} resize-y pt-[26px] pb-3 leading-normal`} />
+            <textarea {...bind('msg')} name="message" id="contact-message" rows={4} className={`${FIELD} resize-y pt-[26px] pb-3 leading-normal`} />
           </label>
           <button type="submit" className="btn-fill min-h-[54px] cursor-pointer justify-center border-0 text-base">
             Enviar por WhatsApp

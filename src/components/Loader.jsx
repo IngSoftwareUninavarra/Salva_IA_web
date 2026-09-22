@@ -4,6 +4,7 @@ import Logo from './Logo'
 export default function Loader({ loaded }) {
   return (
     <div
+      data-loader
       aria-hidden="true"
       className="fixed inset-0 z-100 flex flex-col items-center justify-center gap-3.5 bg-blush transition-transform duration-900 ease-soft will-change-transform"
       style={{ transform: loaded ? 'translateY(-101%)' : 'translateY(0)' }}
